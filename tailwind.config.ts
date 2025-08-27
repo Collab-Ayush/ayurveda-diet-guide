@@ -52,6 +52,10 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				// Ayurvedic constitution colors
+				vata: 'hsl(var(--vata))',
+				pitta: 'hsl(var(--pitta))',
+				kapha: 'hsl(var(--kapha))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -84,11 +88,42 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in': {
+					from: {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					to: {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
+				'gentle-bounce': {
+					'0%, 100%': {
+						transform: 'translateY(0%)',
+						animationTimingFunction: 'cubic-bezier(0,0,0.2,1)'
+					},
+					'50%': {
+						transform: 'translateY(-2%)',
+						animationTimingFunction: 'cubic-bezier(0.8,0,1,1)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.6s ease-out',
+				'gentle-bounce': 'gentle-bounce 2s infinite'
+			},
+			backgroundImage: {
+				'gradient-healing': 'var(--gradient-healing)',
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-subtle': 'var(--gradient-subtle)'
+			},
+			boxShadow: {
+				'soft': 'var(--shadow-soft)',
+				'card': 'var(--shadow-card)'
 			}
 		}
 	},

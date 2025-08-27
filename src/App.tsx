@@ -3,7 +3,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import { Layout } from "./components/Layout";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Patients from "./pages/Patients";
+import Foods from "./pages/Foods";
+import DietCharts from "./pages/DietCharts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -15,7 +20,23 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Layout />}>
+            <Route index element={<Dashboard />} />
+          </Route>
+          <Route path="/patients" element={<Layout />}>
+            <Route index element={<Patients />} />
+          </Route>
+          <Route path="/foods" element={<Layout />}>
+            <Route index element={<Foods />} />
+          </Route>
+          <Route path="/diet-charts" element={<Layout />}>
+            <Route index element={<DietCharts />} />
+          </Route>
+          <Route path="/settings" element={<Layout />}>
+            <Route index element={<div className="p-8"><h1 className="text-2xl font-bold">Settings</h1><p className="text-muted-foreground">Settings page coming soon...</p></div>} />
+          </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
