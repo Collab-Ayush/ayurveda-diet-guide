@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search, Filter, Edit, Trash2 } from 'lucide-react';
 import { FoodItem, Rasa, Virya } from '@/types/ayurveda';
+import { useFoods } from '@/hooks/useFoods';
+import { FoodForm } from '@/components/FoodForm';
 
 // Mock food database
 const mockFoods: FoodItem[] = [
@@ -118,9 +120,11 @@ const getEffectSymbol = (effect: 'Increase' | 'Decrease' | 'Neutral') => {
 };
 
 export default function Foods() {
-  const [foods, setFoods] = useState<FoodItem[]>(mockFoods);
+  const { foods, loading, addFood, updateFood, deleteFood } = useFoods();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [showForm, setShowForm] = useState(false);
+  const [editingFood, setEditingFood] = useState<FoodItem | undefined>();
 
   const filteredFoods = foods.filter(food => {
     const matchesSearch = food.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -128,6 +132,42 @@ export default function Foods() {
     const matchesCategory = selectedCategory === 'All' || food.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const handleSubmit = async (foodData: Omit<FoodItem, 'id'>) => {
+    if (editingFood) {
+      await updateFood(editingFood.id, foodData);
+    } else {
+      await addFood(foodData);
+    }
+    setShowForm(false);
+    setEditingFood(undefined);
+  };
+
+  const handleEdit = (food: FoodItem) => {
+    setEditingFood(food);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this food item?')) {
+      await deleteFood(id);
+    }
+  };
+
+  if (showForm) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <FoodForm
+          food={editingFood}
+          onSubmit={handleSubmit}
+          onCancel={() => {
+            setShowForm(false);
+            setEditingFood(undefined);
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -139,7 +179,7 @@ export default function Foods() {
             Comprehensive food items with nutritional and Ayurvedic properties
           </p>
         </div>
-        <Button className="bg-gradient-primary shadow-soft">
+        <Button className="bg-gradient-primary shadow-soft" onClick={() => setShowForm(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Add Food Item
         </Button>
@@ -185,15 +225,23 @@ export default function Foods() {
                   <CardTitle className="text-lg text-foreground">{food.name}</CardTitle>
                   <CardDescription>{food.category}</CardDescription>
                 </div>
-                <Badge 
-                  className={
-                    food.digestionDifficulty === 'Easy' ? 'bg-green-100 text-green-800 border-green-200' :
-                    food.digestionDifficulty === 'Moderate' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                    'bg-red-100 text-red-800 border-red-200'
-                  }
-                >
-                  {food.digestionDifficulty}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge 
+                    className={
+                      food.digestionDifficulty === 'Easy' ? 'bg-green-100 text-green-800 border-green-200' :
+                      food.digestionDifficulty === 'Moderate' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                      'bg-red-100 text-red-800 border-red-200'
+                    }
+                  >
+                    {food.digestionDifficulty}
+                  </Badge>
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" onClick={() => handleEdit(food)}>
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive" onClick={() => handleDelete(food.id)}>
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">

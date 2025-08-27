@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { Patient, PrakritiType } from '@/types/ayurveda';
+import { usePatients } from '@/hooks/usePatients';
+import { PatientForm } from '@/components/PatientForm';
 
 // Mock data - in real app, this would come from API/database
 const mockPatients: Patient[] = [
@@ -66,13 +68,51 @@ const prakritivariants: Record<PrakritiType, string> = {
 };
 
 export default function Patients() {
-  const [patients, setPatients] = useState<Patient[]>(mockPatients);
+  const { patients, loading, addPatient, updatePatient, deletePatient } = usePatients();
   const [searchTerm, setSearchTerm] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [editingPatient, setEditingPatient] = useState<Patient | undefined>();
 
   const filteredPatients = patients.filter(patient =>
     patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.prakriti.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleSubmit = async (patientData: Omit<Patient, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (editingPatient) {
+      await updatePatient(editingPatient.id, patientData);
+    } else {
+      await addPatient(patientData);
+    }
+    setShowForm(false);
+    setEditingPatient(undefined);
+  };
+
+  const handleEdit = (patient: Patient) => {
+    setEditingPatient(patient);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this patient?')) {
+      await deletePatient(id);
+    }
+  };
+
+  if (showForm) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <PatientForm
+          patient={editingPatient}
+          onSubmit={handleSubmit}
+          onCancel={() => {
+            setShowForm(false);
+            setEditingPatient(undefined);
+          }}
+        />
+      </div>
+    );
+  }
 
   const getBMI = (weight: number, height: number) => {
     const bmi = weight / ((height / 100) ** 2);
@@ -96,7 +136,7 @@ export default function Patients() {
             Manage patient profiles and track their Ayurvedic constitution
           </p>
         </div>
-        <Button className="bg-gradient-primary shadow-soft">
+        <Button className="bg-gradient-primary shadow-soft" onClick={() => setShowForm(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Add Patient
         </Button>
@@ -134,10 +174,10 @@ export default function Patients() {
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" onClick={() => handleEdit(patient)}>
                       <Edit className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive">
+                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive" onClick={() => handleDelete(patient.id)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>

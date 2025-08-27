@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Calendar, Download, Edit, Trash2 } from 'lucide-react';
 import { DietChart } from '@/types/ayurveda';
+import { useDietCharts } from '@/hooks/useDietCharts';
+import { DietChartForm } from '@/components/DietChartForm';
 
 // Mock diet charts
 const mockDietCharts: DietChart[] = [
@@ -79,7 +81,45 @@ const formatDate = (date: Date) => {
 };
 
 export default function DietCharts() {
-  const [dietCharts, setDietCharts] = useState<DietChart[]>(mockDietCharts);
+  const { dietCharts, loading, addDietChart, updateDietChart, deleteDietChart } = useDietCharts();
+  const [showForm, setShowForm] = useState(false);
+  const [editingChart, setEditingChart] = useState<DietChart | undefined>();
+
+  const handleSubmit = async (chartData: Omit<DietChart, 'id' | 'createdAt'>) => {
+    if (editingChart) {
+      await updateDietChart(editingChart.id, chartData);
+    } else {
+      await addDietChart(chartData);
+    }
+    setShowForm(false);
+    setEditingChart(undefined);
+  };
+
+  const handleEdit = (chart: DietChart) => {
+    setEditingChart(chart);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this diet chart?')) {
+      await deleteDietChart(id);
+    }
+  };
+
+  if (showForm) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <DietChartForm
+          dietChart={editingChart}
+          onSubmit={handleSubmit}
+          onCancel={() => {
+            setShowForm(false);
+            setEditingChart(undefined);
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -91,7 +131,7 @@ export default function DietCharts() {
             Create and manage personalized Ayurvedic diet plans
           </p>
         </div>
-        <Button className="bg-gradient-primary shadow-soft">
+        <Button className="bg-gradient-primary shadow-soft" onClick={() => setShowForm(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Create Diet Chart
         </Button>
@@ -170,10 +210,10 @@ export default function DietCharts() {
                     <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                       <Download className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" onClick={() => handleEdit(chart)}>
                       <Edit className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive">
+                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive" onClick={() => handleDelete(chart.id)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -234,7 +274,7 @@ export default function DietCharts() {
             <p className="text-muted-foreground mb-4">
               Create your first personalized Ayurvedic diet chart for a patient.
             </p>
-            <Button className="bg-gradient-primary shadow-soft">
+            <Button className="bg-gradient-primary shadow-soft" onClick={() => setShowForm(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Create Your First Diet Chart
             </Button>
