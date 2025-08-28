@@ -25,6 +25,7 @@ export type Database = {
           patient_id: string | null
           start_date: string
           title: string
+          user_id: string
         }
         Insert: {
           created_at?: string | null
@@ -36,6 +37,7 @@ export type Database = {
           patient_id?: string | null
           start_date: string
           title: string
+          user_id: string
         }
         Update: {
           created_at?: string | null
@@ -47,6 +49,7 @@ export type Database = {
           patient_id?: string | null
           start_date?: string
           title?: string
+          user_id?: string
         }
         Relationships: [
           {
@@ -72,6 +75,7 @@ export type Database = {
           name: string
           protein: number
           rasa: string[] | null
+          user_id: string
           vipaka: string
           virya: string
         }
@@ -88,6 +92,7 @@ export type Database = {
           name: string
           protein: number
           rasa?: string[] | null
+          user_id: string
           vipaka: string
           virya: string
         }
@@ -104,6 +109,7 @@ export type Database = {
           name?: string
           protein?: number
           rasa?: string[] | null
+          user_id?: string
           vipaka?: string
           virya?: string
         }
@@ -122,6 +128,7 @@ export type Database = {
           name: string
           prakriti: string
           updated_at: string | null
+          user_id: string
           water_intake: number
           weight: number
         }
@@ -137,6 +144,7 @@ export type Database = {
           name: string
           prakriti: string
           updated_at?: string | null
+          user_id: string
           water_intake: number
           weight: number
         }
@@ -152,8 +160,30 @@ export type Database = {
           name?: string
           prakriti?: string
           updated_at?: string | null
+          user_id?: string
           water_intake?: number
           weight?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

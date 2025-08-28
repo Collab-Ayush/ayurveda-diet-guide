@@ -52,6 +52,9 @@ export const useDietCharts = () => {
 
   const addDietChart = async (chartData: Omit<DietChart, 'id' | 'createdAt'>) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
       const { data, error } = await supabase
         .from('diet_charts')
         .insert([{
@@ -62,6 +65,7 @@ export const useDietCharts = () => {
           end_date: chartData.endDate.toISOString().split('T')[0],
           meals: chartData.meals as any,
           notes: chartData.notes,
+          user_id: user.id
         }])
         .select()
         .single()

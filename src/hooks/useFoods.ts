@@ -54,6 +54,9 @@ export const useFoods = () => {
 
   const addFood = async (foodData: Omit<FoodItem, 'id'>) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
       const { data, error } = await supabase
         .from('foods')
         .insert([{
@@ -70,6 +73,7 @@ export const useFoods = () => {
           vipaka: foodData.vipaka,
           digestion_difficulty: foodData.digestionDifficulty,
           effects: foodData.effects as any,
+          user_id: user.id
         }])
         .select()
         .single()

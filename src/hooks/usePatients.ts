@@ -51,6 +51,9 @@ export const usePatients = () => {
 
   const addPatient = async (patientData: Omit<Patient, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
       const { data, error } = await supabase
         .from('patients')
         .insert([{
@@ -64,6 +67,7 @@ export const usePatients = () => {
           bowel_movements: patientData.bowelMovements,
           water_intake: patientData.waterIntake,
           lifestyle: patientData.lifestyle,
+          user_id: user.id
         }])
         .select()
         .single()
