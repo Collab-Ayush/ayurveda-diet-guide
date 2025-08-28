@@ -1,12 +1,29 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
-import { DietChart } from '@/types/ayurveda'
+import { DietChart, Meal } from '@/types/ayurveda'
 import { useToast } from '@/hooks/use-toast'
+import type { Tables } from '@/integrations/supabase/types'
+
+type DatabaseDietChart = Tables<'diet_charts'> & {
+  patients?: { name: string }
+}
 
 export const useDietCharts = () => {
   const [dietCharts, setDietCharts] = useState<DietChart[]>([])
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
+
+  const transformDietChart = (dbChart: DatabaseDietChart): DietChart => ({
+    id: dbChart.id,
+    patientId: dbChart.patient_id || '',
+    dietitianId: dbChart.dietitian_id || '',
+    title: dbChart.title,
+    startDate: new Date(dbChart.start_date),
+    endDate: new Date(dbChart.end_date),
+    meals: Array.isArray(dbChart.meals) ? dbChart.meals as unknown as Meal[] : [],
+    notes: dbChart.notes || '',
+    createdAt: new Date(dbChart.created_at || ''),
+  })
 
   const fetchDietCharts = async () => {
     try {
@@ -20,15 +37,7 @@ export const useDietCharts = () => {
 
       if (error) throw error
       
-      const formattedCharts = data?.map(chart => ({
-        ...chart,
-        patientId: chart.patient_id,
-        dietitianId: chart.dietitian_id,
-        startDate: new Date(chart.start_date),
-        endDate: new Date(chart.end_date),
-        createdAt: new Date(chart.created_at),
-      })) || []
-      
+      const formattedCharts = data?.map(transformDietChart) || []
       setDietCharts(formattedCharts)
     } catch (error: any) {
       toast({
@@ -49,9 +58,9 @@ export const useDietCharts = () => {
           patient_id: chartData.patientId,
           dietitian_id: chartData.dietitianId,
           title: chartData.title,
-          start_date: chartData.startDate.toISOString(),
-          end_date: chartData.endDate.toISOString(),
-          meals: chartData.meals,
+          start_date: chartData.startDate.toISOString().split('T')[0],
+          end_date: chartData.endDate.toISOString().split('T')[0],
+          meals: chartData.meals as any,
           notes: chartData.notes,
         }])
         .select()
@@ -59,15 +68,7 @@ export const useDietCharts = () => {
 
       if (error) throw error
 
-      const newChart = {
-        ...data,
-        patientId: data.patient_id,
-        dietitianId: data.dietitian_id,
-        startDate: new Date(data.start_date),
-        endDate: new Date(data.end_date),
-        createdAt: new Date(data.created_at),
-      }
-
+      const newChart = transformDietChart(data)
       setDietCharts(prev => [newChart, ...prev])
       toast({
         title: "Success",
@@ -84,32 +85,25 @@ export const useDietCharts = () => {
 
   const updateDietChart = async (id: string, chartData: Partial<DietChart>) => {
     try {
+      const updateData: any = {}
+      if (chartData.patientId !== undefined) updateData.patient_id = chartData.patientId
+      if (chartData.dietitianId !== undefined) updateData.dietitian_id = chartData.dietitianId
+      if (chartData.title !== undefined) updateData.title = chartData.title
+      if (chartData.startDate !== undefined) updateData.start_date = chartData.startDate.toISOString().split('T')[0]
+      if (chartData.endDate !== undefined) updateData.end_date = chartData.endDate.toISOString().split('T')[0]
+      if (chartData.meals !== undefined) updateData.meals = chartData.meals as any
+      if (chartData.notes !== undefined) updateData.notes = chartData.notes
+
       const { data, error } = await supabase
         .from('diet_charts')
-        .update({
-          patient_id: chartData.patientId,
-          dietitian_id: chartData.dietitianId,
-          title: chartData.title,
-          start_date: chartData.startDate?.toISOString(),
-          end_date: chartData.endDate?.toISOString(),
-          meals: chartData.meals,
-          notes: chartData.notes,
-        })
+        .update(updateData)
         .eq('id', id)
         .select()
         .single()
 
       if (error) throw error
 
-      const updatedChart = {
-        ...data,
-        patientId: data.patient_id,
-        dietitianId: data.dietitian_id,
-        startDate: new Date(data.start_date),
-        endDate: new Date(data.end_date),
-        createdAt: new Date(data.created_at),
-      }
-
+      const updatedChart = transformDietChart(data)
       setDietCharts(prev => prev.map(c => c.id === id ? updatedChart : c))
       toast({
         title: "Success",
