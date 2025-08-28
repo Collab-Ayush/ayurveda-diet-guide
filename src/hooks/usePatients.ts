@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/integrations/supabase/client'
 import { Patient } from '@/types/ayurveda'
 import { useToast } from '@/hooks/use-toast'
 
