@@ -8,7 +8,8 @@ import { LeafAnimation } from '@/components/LeafAnimation'
 
 export default function LandingPage() {
   const [showAnimation, setShowAnimation] = useState(true)
-  const [showContent, setShowContent] = useState(false)
+  const [showWelcome, setShowWelcome] = useState(true)
+  const [showLoginOptions, setShowLoginOptions] = useState(false)
   const navigate = useNavigate()
   const { user, loading } = useAuth()
 
@@ -20,13 +21,21 @@ export default function LandingPage() {
   }, [user, loading, navigate])
 
   useEffect(() => {
-    // Show content after animation
-    const timer = setTimeout(() => {
+    // Hide leaf animation after 3.5 seconds
+    const animationTimer = setTimeout(() => {
       setShowAnimation(false)
-      setTimeout(() => setShowContent(true), 300)
     }, 3500)
 
-    return () => clearTimeout(timer)
+    // Show login options after welcome message has been displayed
+    const loginTimer = setTimeout(() => {
+      setShowWelcome(false)
+      setTimeout(() => setShowLoginOptions(true), 500)
+    }, 5000)
+
+    return () => {
+      clearTimeout(animationTimer)
+      clearTimeout(loginTimer)
+    }
   }, [])
 
   if (loading) {
@@ -42,24 +51,43 @@ export default function LandingPage() {
       {/* Leaf Animation */}
       {showAnimation && <LeafAnimation />}
       
-      {/* Main Content */}
-      <div className={`transition-all duration-700 ${showContent ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-        {showContent && (
-          <div className="text-center space-y-8 max-w-md w-full">
-            {/* Header */}
+      {/* Welcome Section */}
+      <div className={`transition-all duration-1000 ${showWelcome ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+        {showWelcome && (
+          <div className="text-center space-y-6 max-w-md w-full">
             <div className="space-y-4">
-              <div className="flex items-center justify-center space-x-2">
-                <Leaf className="w-8 h-8 text-white" />
-                <h1 className="text-4xl font-bold text-white">AyurDiet</h1>
+              <div className="flex items-center justify-center space-x-3">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <Leaf className="w-8 h-8 text-white" />
+                </div>
+                <h1 className="text-5xl font-bold text-white">AyurDiet</h1>
               </div>
-              <div className="space-y-2">
-                <p className="text-xl text-white/90 font-medium">
+              <div className="space-y-3">
+                <p className="text-2xl text-white/95 font-medium">
                   Your Personalized Ayurvedic Nutrition Companion
                 </p>
-                <p className="text-white/80">
+                <p className="text-lg text-white/85">
                   Bridging Ancient Wisdom with Modern Nutrition Science
                 </p>
               </div>
+            </div>
+          </div>
+        )}
+      </div>
+      
+      {/* Login Options Section */}
+      <div className={`transition-all duration-700 ${showLoginOptions ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+        {showLoginOptions && (
+          <div className="text-center space-y-8 max-w-md w-full">
+            {/* Compact Header */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-center space-x-2">
+                <Leaf className="w-6 h-6 text-white" />
+                <h2 className="text-2xl font-bold text-white">AyurDiet</h2>
+              </div>
+              <p className="text-white/80 text-sm">
+                Choose your account type to continue
+              </p>
             </div>
 
             {/* Authentication Card */}
