@@ -8,7 +8,10 @@ import { PatientLayout } from "./components/patient/PatientLayout";
 import { AuthProvider } from "./contexts/AuthContext";
 import { PatientProvider } from "./contexts/PatientContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import Login from "./pages/Login";
+import LandingPage from "./pages/LandingPage";
+import PatientLogin from "./pages/PatientLogin";
+import DietitianLogin from "./pages/DietitianLogin";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
 import Foods from "./pages/Foods";
@@ -30,8 +33,10 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Login />} />
-              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login/patient" element={<PatientLogin />} />
+              <Route path="/login/dietitian" element={<DietitianLogin />} />
+              <Route path="/register" element={<Register />} />
               
               {/* Admin/Dietitian Routes */}
               <Route path="/dashboard" element={<ProtectedRoute><Layout /></ProtectedRoute>}>

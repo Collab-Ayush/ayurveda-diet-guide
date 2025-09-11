@@ -114,7 +114,14 @@ export default {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.6s ease-out',
-				'gentle-bounce': 'gentle-bounce 2s infinite'
+				'gentle-bounce': 'gentle-bounce 2s infinite',
+				'leaf-fall-1': 'leafFall 3s ease-in-out forwards',
+				'leaf-fall-2': 'leafFall 3.2s ease-in-out forwards',
+				'leaf-fall-3': 'leafFall 2.8s ease-in-out forwards',
+				'leaf-fall-4': 'leafFall 3.5s ease-in-out forwards',
+				'leaf-fall-5': 'leafFall 2.9s ease-in-out forwards',
+				'leaf-fall-6': 'leafFall 3.3s ease-in-out forwards',
+				'leaf-fall-7': 'leafFall 3.1s ease-in-out forwards',
 			},
 			backgroundImage: {
 				'gradient-healing': 'var(--gradient-healing)',
