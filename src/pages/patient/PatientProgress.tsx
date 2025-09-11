@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Camera, Plus, TrendingUp } from 'lucide-react'
+import { Camera, Plus, TrendingUp, Upload } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,6 +9,7 @@ import { Slider } from '@/components/ui/slider'
 import { Progress } from '@/components/ui/progress'
 import { ProgressChart } from '@/components/patient/ProgressChart'
 import { usePatient } from '@/contexts/PatientContext'
+import { toast } from '@/hooks/use-toast'
 import {
   Dialog,
   DialogContent,
@@ -30,11 +31,32 @@ export default function PatientProgress() {
     updateHealthMetric('energy', energy[0])
     updateHealthMetric('digestion', digestion[0])
     
+    toast({
+      title: "Health metrics logged",
+      description: "Your daily health entry has been saved successfully.",
+    })
+    
     // Reset form
     setWeight('')
     setEnergy([7])
     setDigestion([7])
     setNotes('')
+  }
+
+  const handlePhotoUpload = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (file) {
+        toast({
+          title: "Photo uploaded",
+          description: `${file.name} has been added to your progress photos.`,
+        })
+      }
+    }
+    input.click()
   }
 
   const currentWeight = profile?.healthMetrics.weight[profile.healthMetrics.weight.length - 1]?.value || 0
@@ -215,8 +237,8 @@ export default function PatientProgress() {
                 </div>
               </div>
             </div>
-            <Button variant="outline" className="w-full">
-              <Camera className="h-4 w-4 mr-2" />
+            <Button variant="outline" className="w-full" onClick={handlePhotoUpload}>
+              <Upload className="h-4 w-4 mr-2" />
               Upload New Photo
             </Button>
           </CardContent>

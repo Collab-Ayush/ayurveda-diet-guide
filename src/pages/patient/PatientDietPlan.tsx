@@ -1,10 +1,15 @@
 import { useState } from 'react'
-import { Calendar, ShoppingCart, BookOpen } from 'lucide-react'
+import { Calendar as CalendarIcon, ShoppingCart, BookOpen, X } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { MealCard } from '@/components/patient/MealCard'
 import { usePatient } from '@/contexts/PatientContext'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { format } from 'date-fns'
+import { cn } from '@/lib/utils'
+import { toast } from '@/hooks/use-toast'
 import {
   Dialog,
   DialogContent,
@@ -17,6 +22,8 @@ export default function PatientDietPlan() {
   const { profile, dietPlan } = usePatient()
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [showRecipe, setShowRecipe] = useState<string | null>(null)
+  const [showShoppingList, setShowShoppingList] = useState(false)
+  const [showCalendar, setShowCalendar] = useState(false)
 
   const recipes: Record<string, string[]> = {
     'Oats Porridge with Almonds': [
@@ -42,6 +49,36 @@ export default function PatientDietPlan() {
     return items.map(item => item.food).filter((value, index, self) => self.indexOf(value) === index)
   }
 
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setSelectedDate(date)
+      toast({
+        title: "Date Selected",
+        description: `Viewing meal plan for ${format(date, 'PPP')}`,
+      })
+    }
+  }
+
+  const handleShoppingListDownload = () => {
+    const items = generateShoppingList()
+    const content = `Shopping List - ${format(new Date(), 'PPP')}\n\n${items.map((item, index) => `${index + 1}. ${item}`).join('\n')}`
+    
+    const blob = new Blob([content], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `shopping-list-${format(new Date(), 'yyyy-MM-dd')}.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    
+    toast({
+      title: "Shopping List Downloaded",
+      description: "Your shopping list has been saved to your downloads.",
+    })
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -53,14 +90,31 @@ export default function PatientDietPlan() {
           </p>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline" className="flex items-center space-x-2">
+          <Button 
+            variant="outline" 
+            className="flex items-center space-x-2"
+            onClick={() => setShowShoppingList(true)}
+          >
             <ShoppingCart className="h-4 w-4" />
             <span>Shopping List</span>
           </Button>
-          <Button className="flex items-center space-x-2">
-            <Calendar className="h-4 w-4" />
-            <span>Plan Calendar</span>
-          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button className="flex items-center space-x-2">
+                <CalendarIcon className="h-4 w-4" />
+                <span>Plan Calendar</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={handleDateSelect}
+                initialFocus
+                className="pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
@@ -159,6 +213,41 @@ export default function PatientDietPlan() {
                 <p className="text-sm">{step}</p>
               </div>
             ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Shopping List Dialog */}
+      <Dialog open={showShoppingList} onOpenChange={setShowShoppingList}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <ShoppingCart className="h-5 w-5" />
+              <span>Shopping List</span>
+            </DialogTitle>
+            <DialogDescription>
+              Items needed for your current meal plan
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="max-h-60 overflow-y-auto space-y-2">
+              {generateShoppingList().map((item, index) => (
+                <div key={index} className="flex items-center space-x-3 p-2 bg-muted rounded-lg">
+                  <span className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
+                    {index + 1}
+                  </span>
+                  <span className="text-sm">{item}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex space-x-2">
+              <Button onClick={handleShoppingListDownload} className="flex-1">
+                Download List
+              </Button>
+              <Button variant="outline" onClick={() => setShowShoppingList(false)}>
+                Close
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
